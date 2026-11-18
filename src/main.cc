@@ -118,7 +118,11 @@ private:
 		         {{"name", "giac"},
 		          {"version", gv},
 		          {"mimetype", "text/x-giac"},
-		          {"file_extension", ".giac"}}},
+		          {"file_extension", ".giac"},
+		          // no Giac grammar exists in front ends; MATLAB's is the closest
+		          // (name(args), [lists], keywords, and x' read as an operator)
+		          {"pygments_lexer", "matlab"},
+		          {"codemirror_mode", "octave"}}},
 		        {"banner", "Giac " + gv + " computer algebra system\n"
 		                   "giac-kernel " GIAC_KERNEL_VERSION ". Help on a command: ?factor"},
 		        {"help_links",
