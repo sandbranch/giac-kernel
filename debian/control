@@ -1,0 +1,32 @@
+Source: giac-kernel
+Section: math
+Priority: optional
+Maintainer: David Sandquist <sandquist@gmail.com>
+Build-Depends: debhelper-compat (= 13),
+               cmake,
+               pkgconf,
+               libgiac-dev,
+               libgmp-dev,
+               libzmq3-dev,
+               libssl-dev,
+               nlohmann-json3-dev | nlohmann-json3.12-dev
+Standards-Version: 4.7.3
+Homepage: https://github.com/sandbranch/giac-kernel
+Vcs-Browser: https://github.com/sandbranch/giac-kernel
+Vcs-Git: https://github.com/sandbranch/giac-kernel.git
+Rules-Requires-Root: no
+
+Package: giac-kernel
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Suggests: jotter
+Description: Jupyter kernel for the Giac computer algebra system
+ Runs Giac, the computer algebra system behind Xcas and the HP Prime, as a
+ Jupyter kernel. Notebook front ends such as jotter, JupyterLab or VS Code
+ can then evaluate Giac code in cells, with results shown as typeset LaTeX
+ and 2D plots as SVG images.
+ .
+ The kernel is a small native program linked against libgiac. It needs
+ neither Python nor a Jupyter installation; the kernelspec is installed as
+ "giac". Help on a command (?factor), tab completion and interrupting a
+ running computation are supported.

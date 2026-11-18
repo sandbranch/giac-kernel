@@ -1,0 +1,36 @@
+.TH GIAC-KERNEL 1 "November 2026" "giac-kernel 0.1.0" "User Commands"
+.SH NAME
+giac-kernel \- Jupyter kernel for the Giac computer algebra system
+.SH SYNOPSIS
+.B giac-kernel
+.I CONNECTION_FILE
+.br
+.B giac-kernel
+.B \-\-version
+.SH DESCRIPTION
+.B giac-kernel
+runs Giac as a Jupyter kernel. It is not started by hand: a Jupyter client
+such as
+.BR jotter (1)
+starts it through the kernelspec named
+.B giac
+and passes the path of a connection file, which names the ports and the
+signing key to use.
+.PP
+Results are sent as plain text and as LaTeX; 2D graphics are sent as SVG.
+Input ending in
+.B :;
+is evaluated without showing its result.
+.B ?name
+shows the help for a Giac command.
+.SH FILES
+.TP
+.I /usr/share/jupyter/kernels/giac/kernel.json
+The kernelspec clients use to find and start the kernel.
+.SH EXAMPLES
+.nf
+jotter \-\-kernel giac
+jotter notebook.ipynb
+.fi
+.SH SEE ALSO
+.BR jotter (1)

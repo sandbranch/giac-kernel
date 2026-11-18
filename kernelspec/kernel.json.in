@@ -1,0 +1,6 @@
+{
+  "argv": ["@GIAC_KERNEL_BIN@", "{connection_file}"],
+  "display_name": "Giac",
+  "language": "giac",
+  "interrupt_mode": "signal"
+}

@@ -1,0 +1,9 @@
+/build/
+/obj-*/
+/debian/.debhelper/
+/debian/giac-kernel/
+/debian/debhelper-build-stamp
+/debian/files
+/debian/*.substvars
+/debian/*.debhelper.log
+/dist/
