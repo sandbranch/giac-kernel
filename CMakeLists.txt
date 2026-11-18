@@ -42,3 +42,12 @@ if(BUILD_TESTING)
 endif()
 
 install(FILES doc/giac-kernel.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
+
+# Highlighting grammar generator (not installed): see tools/gen-syntax.cc
+add_executable(gen-syntax EXCLUDE_FROM_ALL tools/gen-syntax.cc)
+target_include_directories(gen-syntax PRIVATE ${GIAC_INCLUDE_DIR})
+target_link_libraries(gen-syntax PRIVATE ${GIAC_LIBRARY} ${GMP_LIBRARY})
+
+# Highlighting grammar for front ends that read sublime-syntax (jotter with
+# a syntaxes folder, bat, Sublime Text)
+install(FILES syntax/Giac.sublime-syntax DESTINATION ${CMAKE_INSTALL_DATADIR}/giac-kernel)

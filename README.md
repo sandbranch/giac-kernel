@@ -39,6 +39,19 @@ a:=3:;                        → assigns, shows nothing (Xcas convention)
 - Several statements in one cell (`a:=3;b:=a+1`) show their results as a
   sequence (`3,4`), the same as Giac's own console.
 
+## Syntax highlighting
+
+No editor or notebook front end ships a Giac grammar, so the kernel brings
+one: `syntax/Giac.sublime-syntax`, installed as
+`/usr/share/giac-kernel/Giac.sublime-syntax`. It colours keywords, Giac's own
+~1900 commands (taken from libgiac by `tools/gen-syntax.cc`), your functions,
+numbers, strings and comments, and reads `y''` as derivative primes.
+
+It is in the sublime-syntax format that syntect-based tools read: copy it to
+`~/.config/bat/syntaxes/` for bat, or to `~/.config/jotter/syntaxes/` for a
+jotter that loads user grammars. Front ends that only take a hint get one in
+`kernel_info`: `pygments_lexer` "matlab", the closest existing grammar.
+
 ## Install
 
 Build the Debian package in a clean container (needs Docker):
