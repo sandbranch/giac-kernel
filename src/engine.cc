@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
+#include <cstdlib>
 #include <cstdio>
 #include <cstring>
 #include <set>
@@ -133,14 +135,41 @@ static std::string graphic_svg(const gen &g, const giac::context *ctx)
 	// the viewBox white, as the first thing drawn.
 	size_t vb = svg.find("viewBox=\"");
 	size_t open_end = svg.find('>');
-	if (vb != std::string::npos && open_end != std::string::npos && vb < open_end) {
-		double x, y, w, h;
-		if (std::sscanf(svg.c_str() + vb + 9, "%lf %lf %lf %lf", &x, &y, &w, &h) == 4) {
-			char rect[200];
-			std::snprintf(rect, sizeof rect, "\n<rect x=\"%g\" y=\"%g\" width=\"%g\" height=\"%g\" fill=\"white\" />",
-			              x, y, w, h);
-			svg.insert(open_end + 1, rect);
-		}
+	double x, y, w, h;
+	if (vb == std::string::npos || open_end == std::string::npos || vb > open_end ||
+	    std::sscanf(svg.c_str() + vb + 9, "%lf %lf %lf %lf", &x, &y, &w, &h) != 4 || w <= 0 || h <= 0)
+		return svg;
+	char rect[200];
+	std::snprintf(rect, sizeof rect, "\n<rect x=\"%g\" y=\"%g\" width=\"%g\" height=\"%g\" fill=\"white\" />", x,
+	              y, w, h);
+	svg.insert(open_end + 1, rect);
+
+	// Curves are drawn with vector-effect="non-scaling-stroke" and a width in
+	// pixels. resvg (jotter's renderer) ignores vector-effect, so the width is
+	// read in plot units and a 1px line becomes a band a unit wide. Convert
+	// the width to plot units ourselves and drop the attribute.
+	double wcm = 0, hcm = 0;
+	size_t ws = svg.find("width=\""), hs = svg.find("height=\"");
+	if (ws < open_end && hs < open_end) {
+		wcm = std::atof(svg.c_str() + ws + 7);
+		hcm = std::atof(svg.c_str() + hs + 8);
+	}
+	const double px_per_cm = 96 / 2.54;
+	double sx = wcm > 0 ? wcm * px_per_cm / w : 1, sy = hcm > 0 ? hcm * px_per_cm / h : 1;
+	double unit_per_px = 1 / std::sqrt(sx * sy);  // x and y scales differ; use their mean
+	const std::string effect = "vector-effect=\"non-scaling-stroke\"";
+	for (size_t p = svg.find(effect); p != std::string::npos; p = svg.find(effect, p)) {
+		svg.erase(p, effect.size());
+		size_t tag_end = svg.find('>', p);
+		size_t tag_start = svg.rfind('<', p);
+		size_t sw = svg.find("stroke-width=\"", tag_start);
+		if (sw == std::string::npos || sw > tag_end)
+			continue;
+		size_t v = sw + 14, ve = svg.find('"', v);
+		double px = std::atof(svg.c_str() + v);
+		char val[40];
+		std::snprintf(val, sizeof val, "%g", (px > 0 ? px : 1) * 1.5 * unit_per_px);
+		svg.replace(v, ve - v, val);
 	}
 	return svg;
 }

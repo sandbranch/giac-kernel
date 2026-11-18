@@ -1,3 +1,10 @@
+giac-kernel (0.1.1) unstable; urgency=medium
+
+  * Plots: draw curves as thin lines in renderers without vector-effect
+    support, such as resvg in jotter (they came out as a wide band).
+
+ -- David Sandquist <sandquist@gmail.com>  Wed, 18 Nov 2026 16:09:26 +0100
+
 giac-kernel (0.1.0) unstable; urgency=medium
 
   * Initial release.

@@ -208,6 +208,9 @@ int main(int argc, char **argv)
 
 	r = c.execute("plot(sin(x),x=0..pi)");
 	CHECK(r.result("image/svg+xml").rfind("<svg", 0) == 0, "plot gives SVG");
+	CHECK(r.result("image/svg+xml").find("vector-effect") == std::string::npos &&
+	          r.result("image/svg+xml").find("</svg>") != std::string::npos,
+	      "plot SVG is complete and renderer-independent (no vector-effect)");
 
 	r = c.execute("?factor");
 	st = r.find("stream");
