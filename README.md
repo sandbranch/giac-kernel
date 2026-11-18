@@ -26,7 +26,11 @@ a:=3:;                        → assigns, shows nothing (Xcas convention)
 ## What it does
 
 - Results as plain text and LaTeX (`text/latex`); 2D graphics as SVG, fitted
-  to the plot. 3D graphics are not shown yet.
+  to the plot.
+- 3D surfaces and curves (`plotfunc(x^2-y^2,[x,y])`, 3D `plotparam`) as a
+  static shaded SVG picture. libgiac has no 3D export, so the kernel samples
+  the parametrization Giac returns and draws it itself (`src/plot3d.cc`).
+  Other 3D objects (points, spheres, planes) are not drawn yet.
 - Output of `print()` and Giac's warnings appear as the cell's output.
 - Syntax and evaluation errors are reported as errors, with Giac's message.
 - Tab completion over Giac's ~1900 commands and your own variables.
@@ -69,8 +73,9 @@ a directory holding `kernels/giac/kernel.json` with `argv[0]` set to
 
 - `src/wire.cc`: the Jupyter wire protocol (version 5.3): connection file,
   HMAC-SHA256 signing, multipart framing on libzmq.
-- `src/engine.cc`: everything that touches Giac: parse, evaluate, LaTeX, SVG,
+- `src/engine.cc`: everything that touches Giac: parse, evaluate, LaTeX, 2D SVG,
   help and completion.
+- `src/plot3d.cc`: 3D surfaces and curves to SVG.
 - `src/main.cc`: the five sockets. The main thread evaluates; a heartbeat
   thread and a control thread keep answering, so interrupt and shutdown get
   through during a long computation.

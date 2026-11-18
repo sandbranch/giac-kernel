@@ -1,4 +1,5 @@
 #include "engine.h"
+#include "plot3d.h"
 
 #include <giac/config.h>
 #include <giac/giac.h>
@@ -109,6 +110,69 @@ static std::string fix_attribute_spacing(const std::string &in)
 	return out;
 }
 
+static double attr_num(const std::string &tag, const char *name, bool &found)
+{
+	std::string key = std::string(" ") + name + "=\"";
+	size_t p = tag.find(key);
+	found = p != std::string::npos;
+	return found ? std::atof(tag.c_str() + p + key.size()) : 0;
+}
+
+// Two fixes to the grid Giac draws:
+// - every fifth gridline is drawn in the axes' blue, so at x=2.5 it looks
+//   like a second axis. Keep blue for the real axes (x=0, y=0) only.
+// - y tick labels are right-aligned just inside the frame and overlap it.
+//   Right-align them at the right edge of the picture instead.
+static std::string tidy_grid(const std::string &in, double view_right)
+{
+	std::string out;
+	out.reserve(in.size());
+	size_t pos = 0;
+	while (pos < in.size()) {
+		size_t lt = in.find('<', pos);
+		if (lt == std::string::npos) {
+			out.append(in, pos, std::string::npos);
+			break;
+		}
+		size_t gt = in.find('>', lt);
+		if (gt == std::string::npos) {
+			out.append(in, pos, std::string::npos);
+			break;
+		}
+		out.append(in, pos, lt - pos);
+		std::string tag = in.substr(lt, gt - lt + 1);
+		bool f1, f2, f3, f4;
+		if (tag.compare(0, 5, "<line") == 0 && tag.find("stroke=\"blue\"") != std::string::npos) {
+			double x1 = attr_num(tag, "x1", f1), x2 = attr_num(tag, "x2", f2);
+			double y1 = attr_num(tag, "y1", f3), y2 = attr_num(tag, "y2", f4);
+			bool axis = (f1 && f2 && x1 == x2 && x1 == 0) || (f3 && f4 && y1 == y2 && y1 == 0);
+			if (!axis) {
+				tag.replace(tag.find("stroke=\"blue\""), 13, "stroke=\"cyan\"");
+				size_t sw = tag.find("stroke-width=\"");
+				if (sw != std::string::npos) {
+					size_t v = sw + 14, ve = tag.find('"', v);
+					char val[40];
+					std::snprintf(val, sizeof val, "%g", std::atof(tag.c_str() + v) / 2);
+					tag.replace(v, ve - v, val);
+				}
+			}
+		} else if (tag.compare(0, 5, "<text") == 0 && tag.find("text-anchor:end") != std::string::npos) {
+			size_t sc = tag.find("scale(");
+			double sx = sc != std::string::npos ? std::atof(tag.c_str() + sc + 6) : 1;
+			size_t xp = tag.find(" x=\"");
+			if (xp != std::string::npos && sx > 0) {
+				size_t v = xp + 4, ve = tag.find('"', v);
+				char val[40];
+				std::snprintf(val, sizeof val, "%g", view_right / sx);
+				tag.replace(v, ve - v, val);
+			}
+		}
+		out += tag;
+		pos = gt + 1;
+	}
+	return out;
+}
+
 // A complete SVG document for a 2D graphic, its view fitted to the content
 // the way Xcas autoscales. gen2svg's own preamble always shows -6..6.
 static std::string graphic_svg(const gen &g, const giac::context *ctx)
@@ -171,6 +235,7 @@ static std::string graphic_svg(const gen &g, const giac::context *ctx)
 		std::snprintf(val, sizeof val, "%g", (px > 0 ? px : 1) * 1.5 * unit_per_px);
 		svg.replace(v, ve - v, val);
 	}
+	svg = tidy_grid(svg, x + w * 0.99);  // labels end 1% inside the right edge
 	return svg;
 }
 
@@ -256,7 +321,13 @@ EvalResult Engine::execute(const std::string &code)
 		// The printed form of a graphic is thousands of raw points; clients
 		// that cannot show the SVG get a short placeholder instead.
 		if (is_3d(v)) {
-			r.data.emplace_back("text/plain", "[3D graphic: not shown, only 2D graphics are supported]");
+			std::string svg = plot3d_svg(v, ctx);
+			if (svg.empty()) {
+				r.data.emplace_back("text/plain", "[3D graphic: not shown, only surfaces and curves are drawn]");
+			} else {
+				r.data.emplace_back("text/plain", "[3D graphic]");
+				r.data.emplace_back("image/svg+xml", svg);
+			}
 		} else {
 			r.data.emplace_back("text/plain", "[graphic]");
 			r.data.emplace_back("image/svg+xml", graphic_svg(v, ctx));

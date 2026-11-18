@@ -1,3 +1,12 @@
+giac-kernel (0.2.0) unstable; urgency=medium
+
+  * 3D surfaces and curves drawn as shaded SVG pictures.
+  * 2D plots: only the real axes are drawn in the axis colour (Giac marked
+    every fifth gridline the same way), y tick labels no longer overlap
+    the frame.
+
+ -- David Sandquist <sandquist@gmail.com>  Wed, 18 Nov 2026 16:17:57 +0100
+
 giac-kernel (0.1.1) unstable; urgency=medium
 
   * Plots: draw curves as thin lines in renderers without vector-effect

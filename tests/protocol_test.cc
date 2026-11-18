@@ -212,6 +212,11 @@ int main(int argc, char **argv)
 	          r.result("image/svg+xml").find("</svg>") != std::string::npos,
 	      "plot SVG is complete and renderer-independent (no vector-effect)");
 
+	r = c.execute("plotfunc(x^2-y^2,[x=-2..2,y=-2..2])");
+	CHECK(r.result("image/svg+xml").find("<polygon") != std::string::npos, "3D surface gives SVG facets");
+	r = c.execute("plotparam([cos(t),sin(t),t/5],t=0..10)");
+	CHECK(r.result("image/svg+xml").find("<polyline") != std::string::npos, "3D curve gives SVG");
+
 	r = c.execute("?factor");
 	st = r.find("stream");
 	CHECK(st && st->content["text"].get<std::string>().find("Factorizes") != std::string::npos, "?factor shows help");

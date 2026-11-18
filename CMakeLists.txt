@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(giac-kernel VERSION 0.1.1 LANGUAGES CXX)
+project(giac-kernel VERSION 0.2.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -20,7 +20,7 @@ find_library(GMP_LIBRARY gmp REQUIRED)
 add_library(wire STATIC src/wire.cc)
 target_link_libraries(wire PUBLIC PkgConfig::ZMQ OpenSSL::Crypto nlohmann_json::nlohmann_json)
 
-add_executable(giac-kernel src/main.cc src/engine.cc)
+add_executable(giac-kernel src/main.cc src/engine.cc src/plot3d.cc)
 target_compile_definitions(giac-kernel PRIVATE GIAC_KERNEL_VERSION="${PROJECT_VERSION}")
 target_include_directories(giac-kernel PRIVATE ${GIAC_INCLUDE_DIR})
 target_link_libraries(giac-kernel PRIVATE wire ${GIAC_LIBRARY} ${GMP_LIBRARY} Threads::Threads)
